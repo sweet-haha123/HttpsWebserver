@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>数据导入 - LiteHub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+
+        .container {
+            padding: 2rem;
+            margin-top: 60px;
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #007bff;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #007bff;
+        }
+
+        .upload-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .upload-button {
+            background-color: #007bff;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .upload-button:hover {
+            background-color: #0056b3;
+        }
+
+        .upload-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .report-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .report-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .errors-list {
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .error-item {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: white;
+            border-left: 3px solid #dc3545;
+            border-radius: 4px;
+        }
+
+        .failed-data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .failed-data-table th,
+        .failed-data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .failed-data-table th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .failed-data-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #menu-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 16px;
+            background: white;
+            color: #007bff;
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10000;
+        }
+
+        #menu-button:hover {
+            background-color: #007bff;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .instructions {
+            background: #e7f3ff;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #007bff;
+        }
+
+        .instructions h4 {
+            margin-top: 0;
+            color: #007bff;
+        }
+
+        .instructions ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .instructions li {
+            margin: 0.25rem 0;
+        }
+    </style>
+</head>
+<body>
+    <button id="menu-button" onclick="window.location.href='/menu'">← 返回菜单</button>
+
+    <div class="container">
+        <h2>数据导入中心</h2>
+
+        <div class="instructions">
+            <h4>使用说明：</h4>
+            <ul>
+                <li>支持导入CSV和Excel文件（.csv, .xlsx, .xls）</li>
+                <li>文件大小限制：最大10MB</li>
+                <li>数据行数限制：1-10000行</li>
+                <li>列数限制：1-50列</li>
+                <li>第一行必须是表头（字段名）</li>
+                <li>系统会自动进行数据校验（等价类和边界值测试）</li>
+                <li>导入过程支持事务回滚，确保数据一致性</li>
+            </ul>
+        </div>
+
+        <div class="upload-section">
+            <h3>上传文件</h3>
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
+            </div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <button class="upload-button" id="uploadButton" onclick="uploadFile()">开始导入</button>
+            <div class="status" id="statusMessage"></div>
+        </div>
+
+        <div class="report-section" id="reportSection">
+            <h3>导入报告</h3>
+            <div class="report-stats" id="reportStats"></div>
+            <div class="errors-list" id="errorsList"></div>
+        </div>
+    </div>
+
+    <script>
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadButton = document.getElementById('uploadButton');
+            const statusMessage = document.getElementById('statusMessage');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const reportSection = document.getElementById('reportSection');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showStatus('请选择要导入的文件', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // 禁用按钮，显示进度条
+            uploadButton.disabled = true;
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            statusMessage.style.display = 'none';
+            reportSection.style.display = 'none';
+
+            // 模拟进度
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                if (progress <= 90) {
+                    progressFill.style.width = progress + '%';
+                }
+            }, 200);
+
+            fetch('/data/import', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    uploadButton.disabled = false;
+
+                    if (data.status === 'success' || data.status === 'partial') {
+                        showStatus(data.message || '导入完成', 'success');
+                        displayReport(data);
+                    } else {
+                        showStatus(data.message || '导入失败', 'error');
+                    }
+                }, 500);
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                progressBar.style.display = 'none';
+                uploadButton.disabled = false;
+                showStatus('上传失败: ' + error.message, 'error');
+            });
+        }
+
+        function showStatus(message, type) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = message;
+            statusMessage.className = 'status ' + type;
+            statusMessage.style.display = 'block';
+        }
+
+        function displayReport(data) {
+            const reportSection = document.getElementById('reportSection');
+            const reportStats = document.getElementById('reportStats');
+            const errorsList = document.getElementById('errorsList');
+
+            reportSection.style.display = 'block';
+
+            // 显示统计信息
+            const stats = `
+                <div class="stat-card">
+                    <div class="label">总行数</div>
+                    <div class="value">${data.totalRows || 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">成功行数</div>
+                    <div class="value" style="color: #28a745;">${data.successRows || 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">失败行数</div>
+                    <div class="value" style="color: #dc3545;">${data.failedRows || 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">成功率</div>
+                    <div class="value">${data.statistics ? data.statistics.successRate.toFixed(2) : 0}%</div>
+                </div>
+            `;
+            reportStats.innerHTML = stats;
+
+            // 显示错误信息
+            if (data.errors && data.errors.length > 0) {
+                let errorsHtml = '<h4>错误详情：</h4>';
+                data.errors.forEach((error, index) => {
+                    errorsHtml += `<div class="error-item">${index + 1}. ${error}</div>`;
+                });
+                errorsList.innerHTML = errorsHtml;
+            } else {
+                errorsList.innerHTML = '<p style="color: green;">所有数据导入成功！</p>';
+            }
+
+            // 显示失败的数据（如果有）
+            if (data.failedData && data.failedData.length > 0) {
+                let tableHtml = '<h4>失败的数据行：</h4><table class="failed-data-table"><thead><tr>';
+                
+                // 获取表头
+                if (data.failedData.length > 0) {
+                    const firstRow = data.failedData[0];
+                    for (const key in firstRow) {
+                        tableHtml += `<th>${key}</th>`;
+                    }
+                    tableHtml += '</tr></thead><tbody>';
+
+                    // 添加数据行
+                    data.failedData.forEach(row => {
+                        tableHtml += '<tr>';
+                        for (const key in firstRow) {
+                            tableHtml += `<td>${row[key] || ''}</td>`;
+                        }
+                        tableHtml += '</tr>';
+                    });
+                    tableHtml += '</tbody></table>';
+                }
+
+                errorsList.innerHTML += tableHtml;
+            }
+        }
+
+        // 文件选择时显示文件名
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const fileName = e.target.files[0].name;
+                showStatus('已选择文件: ' + fileName, 'info');
+            }
+        });
+    </script>
+</body>
+</html>
+

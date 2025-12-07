@@ -154,6 +154,11 @@
         <p>支持视频预览、倍速、拖动进度条、暂停播放等</p>
         <div id="video_centor" class="menu-option">查看状态 </div>
       </div>
+      <div class="card">
+        <h2>📥 数据导入</h2>
+        <p>支持CSV/Excel文件导入，包含数据校验和导入报告</p>
+        <div id="data_import" class="menu-option">导入数据 </div>
+      </div>
     </div>
   </div>
   <script>
@@ -243,6 +248,12 @@
           window.location.href = '/video_centor';
         }
         document.getElementById('video_centor').addEventListener('click', goToVideoCentor);
+        
+        //######################数据导入跳转#########################################
+        function goToDataImport() {
+          window.location.href = '/data_import';
+        }
+        document.getElementById('data_import').addEventListener('click', goToDataImport);
 
 
           //######################后台状态跳转#########################################

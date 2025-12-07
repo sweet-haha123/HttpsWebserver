@@ -116,6 +116,7 @@ private:
     friend class VideoGetCommentHandler;
     friend class VideoLikeHandler;
     friend class VideoViewCountsHandler;
+    friend class DataImportHandler;
 
 private:
     enum GameType

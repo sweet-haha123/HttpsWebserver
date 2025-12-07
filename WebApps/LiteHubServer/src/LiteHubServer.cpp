@@ -22,11 +22,13 @@
 #include "../include/handlers/VideoGetCommentHandler.h"
 #include "../include/handlers/VideoLikeHandler.h"
 #include "../include/handlers/VideoViewCountsHandler.h"
+#include "../include/handlers/DataImportHandler.h"
 
 #include "../include/LiteHubServer.h"
 #include "../../../HttpServer/include/http/HttpRequest.h"
 #include "../../../HttpServer/include/http/HttpResponse.h"
 #include "../../../HttpServer/include/http/HttpServer.h"
+#include "../../../HttpServer/include/utils/FileUtil.h"
 
 using namespace http;
 
@@ -142,6 +144,26 @@ void LiteHubServer::initializeRouter()
 
     httpServer_.Post("/video/like", std::make_shared<VideoLikeHandler>(this));
     httpServer_.Post("/video/view_counts", std::make_shared<VideoViewCountsHandler>(this));
+    
+    // 数据导入功能
+    httpServer_.Get("/data_import", [this](const http::HttpRequest& req, http::HttpResponse* resp) {
+        std::string reqFile("../WebApps/LiteHubServer/resource/data_import.html");
+        http::FileUtil fileOperater(reqFile);
+        if (!fileOperater.isValid())
+        {
+            LOG_WARN << reqFile << " not exist.";
+            fileOperater.resetDefaultFile();
+        }
+        std::vector<char> buffer(fileOperater.size());
+        fileOperater.readFile(buffer);
+        std::string htmlContent(buffer.data(), buffer.size());
+        resp->setStatusLine(req.getVersion(), http::HttpResponse::k200Ok, "OK");
+        resp->setCloseConnection(false);
+        resp->setContentType("text/html");
+        resp->setContentLength(htmlContent.size());
+        resp->setBody(htmlContent);
+    });
+    httpServer_.Post("/data/import", std::make_shared<DataImportHandler>(this));
 }
 
 void LiteHubServer::restartChessGameVsAi(const http::HttpRequest &req, http::HttpResponse *resp)
